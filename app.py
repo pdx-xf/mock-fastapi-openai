@@ -5,8 +5,17 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="OpenAI-compatible API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有方法（GET、POST 等）
+    allow_headers=["*"],  # 允许所有请求头
+)
 
 class Message(BaseModel):
     role: str
