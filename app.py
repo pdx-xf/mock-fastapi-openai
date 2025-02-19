@@ -28,6 +28,10 @@ class ChatCompletionRequest(BaseModel):
     temperature: Optional[float] = 0.1
     stream: Optional[bool] = False
 
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome using OpenAI-compatible API"}
+
 async def _resp_async_generator(text_resp: str):
     tokens = text_resp.split(" ")
 
