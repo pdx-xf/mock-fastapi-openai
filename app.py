@@ -105,7 +105,7 @@ async def chat_completions(request: Request):
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
 
-    resp_content = "As a mock AI Assistant, I can only echo your last message: " + body.messages[-1].content
+    resp_content = "The updated Marvin backend is under development, I can only echo your last message: " + body.messages[-1].content
 
     if body.stream:
         return StreamingResponse(
