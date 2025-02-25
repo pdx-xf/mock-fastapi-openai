@@ -32,6 +32,17 @@ class ChatCompletionRequest(BaseModel):
 async def read_root():
     return {"message": "Welcome using OpenAI-compatible API"}
 
+
+
+# add model lists
+MODELS = ["model 1", "model 2", "model 3"]
+class ModelListResponse(BaseModel):
+    data: list
+@app.get("/models", response_model=ModelListResponse)
+async def get_models():
+    return {"data": [{"id": model, "object": "model"} for model in MODELS]}
+
+
 async def _resp_async_generator(text_resp: str):
     tokens = text_resp.split(" ")
 
