@@ -11,10 +11,10 @@ app = FastAPI(title="OpenAI-compatible API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # 允许所有方法（GET、POST 等）
-    allow_headers=["*"],  # 允许所有请求头
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
 class Message(BaseModel):
@@ -129,7 +129,7 @@ async def chat_completions(request: Request):
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
 
-    resp_content = "The updated Marvin backend is under development, I can only echo your last message: " + body.messages[-1].content
+    resp_content = "The is a test response, I can only echo your last message: " + body.messages[-1].content
 
     if body.stream:
         return StreamingResponse(
@@ -148,11 +148,65 @@ async def chat_completions(request: Request):
                 "finish_reason": "stop",
             }
         ],
+        
         "usage": {
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "total_tokens": 0,
         },
+        
+        "citations": [
+            {
+                "documentPath": "Test.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test.pdf",
+                "pageNumber": 1
+            },
+            {
+                "documentPath": "Test2.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test2.pdf",
+                "pageNumber": 2
+            },
+            {
+                "documentPath": "Test3.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test3.pdf",
+                "pageNumber": 3
+            },
+                        {
+                "documentPath": "Test4.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test4.pdf",
+                "pageNumber": 4
+            },
+            {
+                "documentPath": "Test5.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test5.pdf",
+                "pageNumber": 5
+            },
+            {
+                "documentPath": "Test6.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test6.pdf",
+                "pageNumber": 6
+            },
+            {
+                "documentPath": "Test7.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test7.pdf",
+                "pageNumber": 7
+            },
+            {
+                "documentPath": "Test8.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test8.pdf",
+                "pageNumber": 8
+            },
+            {
+                "documentPath": "Test9.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test9.pdf",
+                "pageNumber": 9
+            },
+            {
+                "documentPath": "Test10.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test10.pdf",
+                "pageNumber": 10
+            }
+        ]
     }
 
 if __name__ == "__main__":
