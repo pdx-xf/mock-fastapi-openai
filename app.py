@@ -6,6 +6,10 @@ from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+import os
+import dotenv
+
+dotenv.load_dotenv()
 
 app = FastAPI(title="OpenAI-compatible API")
 
@@ -128,8 +132,8 @@ async def chat_completions(request: Request):
 
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
-
-    resp_content = "The is a test response, I can only echo your last message: " + body.messages[-1].content
+    image_markdown = os.getenv("IMAGE_MARKDOWN")
+    resp_content = f"I attach the {image_markdown} for your reference. This is a test response, I can only echo your last message: " + body.messages[-1].content
 
     if body.stream:
         return StreamingResponse(
