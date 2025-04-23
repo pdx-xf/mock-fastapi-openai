@@ -133,13 +133,21 @@ async def chat_completions(request: Request):
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
     image_markdown = os.getenv("IMAGE_MARKDOWN")
-    resp_content = f"I attach the {image_markdown} for your reference. This is a test response, I can only echo your last message: " + body.messages[-1].content
+    resp_content = f"This is a test response, I can only echo your last message: " + body.messages[-1].content
 
     if body.stream:
         return StreamingResponse(
             _resp_async_generator(resp_content), media_type="text/event-stream"
         )
 
+    # post process the response
+    def post_process_response(resp_content):
+        # if the response contains the image_markdown, then add the image_markdown to the response
+        if image_markdown in resp_content:
+            resp_content = resp_content + image_markdown
+        return resp_content
+    
+    resp_content = post_process_response(resp_content)
     return {
         "id": "chatcmpl-1337",
         "object": "chat.completion",
