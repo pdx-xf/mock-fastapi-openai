@@ -1,5 +1,14 @@
 fastapi
 uvicorn
 pydantic
+pydantic_core
 starlette
 python-dotenv
+typing_extensions
+typing_inspection
+annotated_types
+anyio
+sniffio
+exceptiongroup
+click
+h11

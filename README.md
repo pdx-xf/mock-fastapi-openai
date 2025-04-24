@@ -1,6 +1,16 @@
 # OPENAI-FASTAPI-SERVER
 This is a FastAPI server that mocks OpenAI API allowing you to develop customised API for most UI uses (e.g. [LibreChat](https://github.com/danny-avila/LibreChat)).
 
+## Local server
+
+```
+pip install uv
+
+uv pip sync requirements.txt
+
+uv run app.py
+```
+
 ## Run the server
 
 ```bash
