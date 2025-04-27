@@ -17,13 +17,15 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 
 class Message(BaseModel):
     role: str
     content: str
+
 
 class ChatCompletionRequest(BaseModel):
     model: Optional[str] = "mock-gpt-model"
@@ -32,16 +34,20 @@ class ChatCompletionRequest(BaseModel):
     temperature: Optional[float] = 0.1
     stream: Optional[bool] = False
 
+
 @app.get("/")
 async def read_root():
     return {"message": "Welcome using OpenAI-compatible API"}
 
 
-
 # add model lists
 MODELS = ["model 1", "model 2", "model 3"]
+
+
 class ModelListResponse(BaseModel):
     data: list
+
+
 @app.get("/models", response_model=ModelListResponse)
 async def get_models():
     return {"data": [{"id": model, "object": "model"} for model in MODELS]}
@@ -109,16 +115,17 @@ async def log_request_details(request: Request):
         "Headers": headers,
         "Query Params": query_params,
         "Cookies": cookies,
-        "Body": body
+        "Body": body,
     }
 
     print("\n" + "=" * 60)
     print("📌 REQUEST DETAILS 📌")
     print("=" * 60)
     for key, value in log_data.items():
-        print(f"🔹 {key}:\n{json.dumps(value, indent=2) if isinstance(value, dict) else value}\n")
+        print(
+            f"🔹 {key}:\n{json.dumps(value, indent=2) if isinstance(value, dict) else value}\n"
+        )
     print("=" * 60 + "\n")
-
 
 
 @app.post("/chat/completions")
@@ -133,94 +140,73 @@ async def chat_completions(request: Request):
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
     image_markdown = os.getenv("IMAGE_MARKDOWN")
-    resp_content = f"This is a test response, I can only echo your last message: " + body.messages[-1].content
+    data_arr = [
+            {
+                "documentPath": "Test.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test.pdf",
+                "pageNumber": 1,
+            },
+            {
+                "documentPath": "Test2.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test2.pdf",
+                "pageNumber": 2,
+            },
+            {
+                "documentPath": "Test3.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test3.pdf",
+                "pageNumber": 3,
+            },
+            {
+                "documentPath": "Test4.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test4.pdf",
+                "pageNumber": 4,
+            },
+            {
+                "documentPath": "Test5.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test5.pdf",
+                "pageNumber": 5,
+            },
+            {
+                "documentPath": "Test6.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test6.pdf",
+                "pageNumber": 6,
+            },
+            {
+                "documentPath": "Test7.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test7.pdf",
+                "pageNumber": 7,
+            },
+            {
+                "documentPath": "Test8.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test8.pdf",
+                "pageNumber": 8,
+            },
+            {
+                "documentPath": "Test9.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test9.pdf",
+                "pageNumber": 9,
+            },
+            {
+                "documentPath": "Test10.pdf",
+                "documentChunk": "This is a test citation which is a chunk of the document Test10.pdf",
+                "pageNumber": 10,
+            },
+        ]
+
+    resp_content = (
+        f"This is a test response, I can only echo your last message: "
+        + body.messages[-1].content
+        + f"\n{image_markdown}"
+        + f"\ndata_start{json.dumps(data_arr)}data_end"
+    )
 
     if body.stream:
         return StreamingResponse(
             _resp_async_generator(resp_content), media_type="text/event-stream"
         )
 
-    # post process the response
-    def post_process_response(resp_content):
-        # if the response contains the image_markdown, then add the image_markdown to the response
-        if image_markdown in resp_content:
-            resp_content = resp_content + image_markdown
-        return resp_content
-    
-    resp_content = post_process_response(resp_content)
-    return {
-        "id": "chatcmpl-1337",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": body.model,
-        "choices": [
-            {
-                "index": 0,
-                "message": {"role": "assistant", "content": resp_content},
-                "finish_reason": "stop",
-            }
-        ],
-        
-        "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
-        },
-        
-        "citations": [
-            {
-                "documentPath": "Test.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test.pdf",
-                "pageNumber": 1
-            },
-            {
-                "documentPath": "Test2.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test2.pdf",
-                "pageNumber": 2
-            },
-            {
-                "documentPath": "Test3.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test3.pdf",
-                "pageNumber": 3
-            },
-                        {
-                "documentPath": "Test4.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test4.pdf",
-                "pageNumber": 4
-            },
-            {
-                "documentPath": "Test5.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test5.pdf",
-                "pageNumber": 5
-            },
-            {
-                "documentPath": "Test6.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test6.pdf",
-                "pageNumber": 6
-            },
-            {
-                "documentPath": "Test7.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test7.pdf",
-                "pageNumber": 7
-            },
-            {
-                "documentPath": "Test8.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test8.pdf",
-                "pageNumber": 8
-            },
-            {
-                "documentPath": "Test9.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test9.pdf",
-                "pageNumber": 9
-            },
-            {
-                "documentPath": "Test10.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test10.pdf",
-                "pageNumber": 10
-            }
-        ]
-    }
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=3000)
