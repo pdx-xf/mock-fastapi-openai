@@ -6,6 +6,8 @@ This is a FastAPI server that mocks OpenAI API allowing you to develop customise
 ```
 pip install uv
 
+uv venv
+
 uv pip sync requirements.txt
 
 uv run app.py
