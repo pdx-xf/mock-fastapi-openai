@@ -53,48 +53,16 @@ async def get_models():
     return {"data": [{"id": model, "object": "model"} for model in MODELS]}
 
 
-async def _resp_async_generator(text_resp: str):
-    tokens = text_resp.split(" ")
-
-    for i, token in enumerate(tokens):
-        # First chunk must include the role: "assistant"
-        if i == 0:
-            chunk = {
-                "id": f"chatcmpl-{i}",
-                "object": "chat.completion.chunk",
-                "created": int(time.time()),
-                "model": "mock-gpt-model",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {"role": "assistant", "content": token + " "},
-                        "finish_reason": None,
-                    }
-                ],
-            }
-        else:
-            # Subsequent chunks only include the content
-            chunk = {
-                "id": f"chatcmpl-{i}",
-                "object": "chat.completion.chunk",
-                "created": int(time.time()),
-                "model": "mock-gpt-model",
-                "choices": [
-                    {
-                        "index": 0,
-                        "delta": {"content": token + " "},
-                        "finish_reason": None,
-                    }
-                ],
-            }
-        yield f"data: {json.dumps(chunk)}\n\n"
-        await asyncio.sleep(0.1)
-
+async def _post_process(text_resp: str, len_tokens: int = 0):
     # 请求图片
     image_markdown = os.getenv("IMAGE_MARKDOWN")
 
+    # 根据 text_resp 中 , 后插入 请求图片返回
+    text_resp_list = text_resp.split(",")
+    image_markdown = f"result:{text_resp_list[0]},{image_markdown},{text_resp_list[1]}"
+
     chunk = {
-        "id": f"chatcmpl-{len(tokens)}",
+        "id": f"chatcmpl-{len_tokens}",
         "object": "chat.completion.chunk",
         "created": int(time.time()),
         "model": "mock-gpt-model",
@@ -165,7 +133,7 @@ async def _resp_async_generator(text_resp: str):
     ]
 
     chunk = {
-        "id": f"chatcmpl-{len(tokens) + 1}",
+        "id": f"chatcmpl-{len_tokens + 1}",
         "object": "chat.completion.chunk",
         "created": int(time.time()),
         "model": "mock-gpt-model",
@@ -180,6 +148,48 @@ async def _resp_async_generator(text_resp: str):
 
     yield f"data: {json.dumps(chunk)}\n\n"
     await asyncio.sleep(0.1)
+
+
+async def _resp_async_generator(text_resp: str):
+    tokens = text_resp.split(" ")
+
+    for i, token in enumerate(tokens):
+        # First chunk must include the role: "assistant"
+        if i == 0:
+            chunk = {
+                "id": f"chatcmpl-{i}",
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model": "mock-gpt-model",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"role": "assistant", "content": token + " "},
+                        "finish_reason": None,
+                    }
+                ],
+            }
+        else:
+            # Subsequent chunks only include the content
+            chunk = {
+                "id": f"chatcmpl-{i}",
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model": "mock-gpt-model",
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"content": token + " "},
+                        "finish_reason": None,
+                    }
+                ],
+            }
+        yield f"data: {json.dumps(chunk)}\n\n"
+        await asyncio.sleep(0.1)
+
+    # 使用 async for 来正确处理异步生成器
+    async for chunk in _post_process(text_resp, len(tokens)):
+        yield chunk
 
     # Signal the end of the stream
     yield "data: [DONE]\n\n"
