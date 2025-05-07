@@ -83,12 +83,103 @@ async def _resp_async_generator(text_resp: str):
                     {
                         "index": 0,
                         "delta": {"content": token + " "},
-                        "finish_reason": None if i < len(tokens) - 1 else "stop",
+                        "finish_reason": None,
                     }
                 ],
             }
         yield f"data: {json.dumps(chunk)}\n\n"
         await asyncio.sleep(0.1)
+
+    # 请求图片
+    image_markdown = os.getenv("IMAGE_MARKDOWN")
+
+    chunk = {
+        "id": f"chatcmpl-{len(tokens)}",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": "mock-gpt-model",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {"content": image_markdown + " "},
+                "finish_reason": None,
+            }
+        ],
+    }
+
+    yield f"data: {json.dumps(chunk)}\n\n"
+    await asyncio.sleep(0.1)
+
+    # 发送数据
+    data_arr = [
+        {
+            "documentPath": "Test.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test.pdf",
+            "pageNumber": 1,
+        },
+        {
+            "documentPath": "Test2.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test2.pdf",
+            "pageNumber": 2,
+        },
+        {
+            "documentPath": "Test3.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test3.pdf",
+            "pageNumber": 3,
+        },
+        {
+            "documentPath": "Test4.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test4.pdf",
+            "pageNumber": 4,
+        },
+        {
+            "documentPath": "Test5.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test5.pdf",
+            "pageNumber": 5,
+        },
+        {
+            "documentPath": "Test6.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test6.pdf",
+            "pageNumber": 6,
+        },
+        {
+            "documentPath": "Test7.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test7.pdf",
+            "pageNumber": 7,
+        },
+        {
+            "documentPath": "Test8.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test8.pdf",
+            "pageNumber": 8,
+        },
+        {
+            "documentPath": "Test9.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test9.pdf",
+            "pageNumber": 9,
+        },
+        {
+            "documentPath": "Test10.pdf",
+            "documentChunk": "This is a test citation which is a chunk of the document Test10.pdf",
+            "pageNumber": 10,
+        },
+    ]
+
+    chunk = {
+        "id": f"chatcmpl-{len(tokens) + 1}",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": "mock-gpt-model",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {"content": f"\ndata_start{json.dumps(data_arr)}data_end"},
+                "finish_reason": "stop",
+            }
+        ],
+    }
+
+    yield f"data: {json.dumps(chunk)}\n\n"
+    await asyncio.sleep(0.1)
 
     # Signal the end of the stream
     yield "data: [DONE]\n\n"
@@ -139,65 +230,10 @@ async def chat_completions(request: Request):
 
     if not body.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
-    image_markdown = os.getenv("IMAGE_MARKDOWN")
-    data_arr = [
-            {
-                "documentPath": "Test.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test.pdf",
-                "pageNumber": 1,
-            },
-            {
-                "documentPath": "Test2.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test2.pdf",
-                "pageNumber": 2,
-            },
-            {
-                "documentPath": "Test3.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test3.pdf",
-                "pageNumber": 3,
-            },
-            {
-                "documentPath": "Test4.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test4.pdf",
-                "pageNumber": 4,
-            },
-            {
-                "documentPath": "Test5.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test5.pdf",
-                "pageNumber": 5,
-            },
-            {
-                "documentPath": "Test6.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test6.pdf",
-                "pageNumber": 6,
-            },
-            {
-                "documentPath": "Test7.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test7.pdf",
-                "pageNumber": 7,
-            },
-            {
-                "documentPath": "Test8.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test8.pdf",
-                "pageNumber": 8,
-            },
-            {
-                "documentPath": "Test9.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test9.pdf",
-                "pageNumber": 9,
-            },
-            {
-                "documentPath": "Test10.pdf",
-                "documentChunk": "This is a test citation which is a chunk of the document Test10.pdf",
-                "pageNumber": 10,
-            },
-        ]
 
     resp_content = (
         f"This is a test response, I can only echo your last message: "
         + body.messages[-1].content
-        + f"\n{image_markdown}"
-        + f"\ndata_start{json.dumps(data_arr)}data_end"
     )
 
     if body.stream:
